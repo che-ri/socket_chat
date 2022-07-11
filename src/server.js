@@ -24,9 +24,9 @@ const io = SocketIo(server);
 
 io.on("connection", (socket) => {
     socket.on("enter_room", (room_name, done) => {
-        console.log(room_name);
+        socket.join(room_name);
         setTimeout(() => {
-            done("server ::: 완료");
+            done("server ::: 채팅방 입장");
         }, 1000);
     });
     socket.on("disconnect", () => {
