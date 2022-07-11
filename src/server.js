@@ -14,10 +14,15 @@ app.get("/*", (req, res) => res.redirect("home"));
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+//채팅방에 입장한 사람들은 소켓에 연결될 것이고, 연결된 소켓은 이 array에 들어간다.
+const sockets = [];
+
 wss.on("connection", (socket) => {
+    sockets.push(socket);
     socket.on("close", () => console.log("disconnected from the browser"));
-    socket.on("message", (message) => console.log(message.toString()));
-    socket.send("hello");
+    socket.on("message", (message) => {
+        sockets.forEach((s) => s.send(message.toString()));
+    });
 });
 
 server.listen(3000, () => console.log("listening on http://localhost:3000"));
