@@ -10,15 +10,11 @@ html(lang="en")
         header
             h1 Noom
         main
-            ul
+            div#welcome 
+                form
+                    input(type="text", placeholder="채팅방 제목을 입력해주세요." required)
+                    button Enter Room
 
-            form#nickname
-                input(type="text", placeholder="닉네임을 입력해주세요." required)
-                button Save
-            form#message
-                input(type="text", placeholder="메세지를 입력해주세요." required)
-                button Send
-        button Call
 
         //- script를 사용하게 설정하려면, server.js에서 해당 js파일을 use설정 해야한다.
         script(src="/socket.io/socket.io.js") 

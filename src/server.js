@@ -13,13 +13,21 @@ app.get("/*", (req, res) => res.redirect("home"));
 const server = http.createServer(app);
 const io = SocketIo(server);
 
+/**
+ * socket.io의 장점
+ * 1. 메세지 이벤트를 커스텀할 수 있다. (websocket은 메세지를 보낼 때 무조건 message 이벤트 사용.)
+ * 2. 프론트에서 데이터 형식을 다양하게 보낼 수 있다. (기존 websocket은 무조건 string만 가능)
+ * 3. 프론트에서 메세지를 보낼 때, 함수를 실어서 보낼 수 있다. 프론트에서 emit으로 보낼 때, 마지막 인자에 함수를 넣어주고 받은 함수를 서버에서 실행시키면, 프론트에서 작동한다!
+ * 4. 소켓의 연결이 끊어지면, 롱 풀링을 이용하여, 다시 소켓이 정상화되면 자동으로 연결해준다.
+ * 5. 기본적으로 룸의 개념이 있다.
+ */
+
 io.on("connection", (socket) => {
-    let user_name = "익명";
-    socket.on("message", (message) => {
-        io.emit("message", `${user_name}: ${message}`);
-    });
-    socket.on("nickname", (nickname) => {
-        user_name = nickname;
+    socket.on("enter_room", (room_name, done) => {
+        console.log(room_name);
+        setTimeout(() => {
+            done("server ::: 완료");
+        }, 1000);
     });
     socket.on("disconnect", () => {
         console.log("user disconnected");
