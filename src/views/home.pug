@@ -12,7 +12,10 @@ html(lang="en")
         main
             ul
 
-            form 
+            form#nickname
+                input(type="text", placeholder="닉네임을 입력해주세요." required)
+                button Save
+            form#message
                 input(type="text", placeholder="메세지를 입력해주세요." required)
                 button Send
         button Call

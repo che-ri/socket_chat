@@ -19,9 +19,21 @@ const sockets = [];
 
 wss.on("connection", (socket) => {
     sockets.push(socket);
+    socket["nickname"] = "익명";
     socket.on("close", () => console.log("disconnected from the browser"));
     socket.on("message", (message) => {
-        sockets.forEach((s) => s.send(message.toString()));
+        //클라이언트로부터 받은 string 형식의 객체를 parse
+        const parsed_message = JSON.parse(message.toString());
+
+        switch (parsed_message.type) {
+            case "message":
+                sockets.forEach((s) =>
+                    s.send(`${socket.nickname}: ${parsed_message.payload}`)
+                );
+            case "nickname":
+                //socket은 기본적으로 객체라, 키를 추가할 수 있음. socket 안에 사용자를 정의할 수 있는 닉네임을 실어서 보낸다.
+                socket["nickname"] = parsed_message.payload;
+        }
     });
 });
 
