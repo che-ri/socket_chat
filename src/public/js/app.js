@@ -37,4 +37,8 @@ socket.on("welcome", () => {
     addMessage("누군가가 입장했습니다!");
 });
 
+socket.on("bye", () => {
+    addMessage("누군가가 퇴장했습니다!");
+});
+
 socket.on("disconnect", () => console.log("disconnect to server"));

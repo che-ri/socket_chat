@@ -33,6 +33,10 @@ io.on("connection", (socket) => {
         done();
         socket.to(room_name).emit("welcome"); //"welcome"이라는 이름의 이벤트를 보낸다.
     });
+    socket.on("disconnecting", () => {
+        //사용자가 채팅방을 떠나려고 하면 이 이벤트가 실행됨
+        socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+    });
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
