@@ -23,11 +23,15 @@ const io = SocketIo(server);
  */
 
 io.on("connection", (socket) => {
-    socket.on("enter_room", (room_name, done) => {
+    socket.onAny((event) => {
+        //socket의 모든 이벤트에 접근
+        console.log(`Socket Event : ${event}`);
+    });
+    socket.on("enter_room", (payload, done) => {
+        const { room_name } = payload;
         socket.join(room_name);
-        setTimeout(() => {
-            done("server ::: 채팅방 입장");
-        }, 1000);
+        done();
+        socket.to(room_name).emit("welcome"); //"welcome"이라는 이름의 이벤트를 보낸다.
     });
     socket.on("disconnect", () => {
         console.log("user disconnected");
