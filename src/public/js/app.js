@@ -10,11 +10,24 @@ socket.on("room", (msg) => {
     console.log(msg);
 });
 
+function handleMessageSubmit(event) {
+    //채팅방에 입장하여 메세지를 입력했을 때, 메세지를 보내는 역할.
+    event.preventDefault();
+    const $input = $room.querySelector("input");
+    socket.emit("new_message", { message: $input.value, room_name }, () => {
+        addMessage(`You : ${$input.value}`);
+        $input.value = "";
+    });
+}
+
 function showRoom() {
     $welcome.hidden = true;
     $room.hidden = false;
     const $h3 = $room.querySelector("h3");
     $h3.textContent = `Room ${room_name}`;
+
+    const $form = $room.querySelector("form");
+    $form.addEventListener("submit", handleMessageSubmit);
 }
 
 function addMessage(message) {
@@ -27,7 +40,7 @@ function addMessage(message) {
 $form.addEventListener("submit", (event) => {
     event.preventDefault();
     const $input = $form.querySelector("input");
-    socket.emit("enter_room", { payload: $input.value }, showRoom);
+    socket.emit("enter_room", { room_name: $input.value }, showRoom);
     room_name = $input.value;
     $input.value = "";
 });
@@ -39,6 +52,10 @@ socket.on("welcome", () => {
 
 socket.on("bye", () => {
     addMessage("누군가가 퇴장했습니다!");
+});
+
+socket.on("new_message", ({ message }) => {
+    addMessage(message);
 });
 
 socket.on("disconnect", () => console.log("disconnect to server"));

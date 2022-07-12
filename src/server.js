@@ -40,6 +40,11 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
+    socket.on("new_message", (payload, done) => {
+        const { message, room_name } = payload;
+        socket.to(room_name).emit("new_message", { message });
+        done();
+    });
 });
 
 server.listen(3000, () => console.log("listening on http://localhost:3000"));
