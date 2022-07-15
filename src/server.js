@@ -23,6 +23,7 @@ const io = SocketIo(server);
  */
 
 io.on("connection", (socket) => {
+    socket["nickname"] = "익명"; //소켓 "nickname" key에 default setting
     socket.onAny((event) => {
         //socket의 모든 이벤트에 접근
         console.log(`Socket Event : ${event}`);
@@ -31,19 +32,27 @@ io.on("connection", (socket) => {
         const { room_name } = payload;
         socket.join(room_name);
         done();
-        socket.to(room_name).emit("welcome"); //"welcome"이라는 이름의 이벤트를 보낸다.
+        socket.to(room_name).emit("welcome", { nickname: socket.nickname }); //"welcome"이라는 이름의 이벤트를 보낸다.
     });
     socket.on("disconnecting", () => {
         //사용자가 채팅방을 떠나려고 하면 이 이벤트가 실행됨
-        socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+        socket.rooms.forEach((room) =>
+            socket.to(room).emit("bye", { nickname: socket.nickname })
+        );
     });
     socket.on("disconnect", () => {
         console.log("user disconnected");
     });
     socket.on("new_message", (payload, done) => {
         const { message, room_name } = payload;
-        socket.to(room_name).emit("new_message", { message });
+        socket
+            .to(room_name)
+            .emit("new_message", { message: `${socket.nickname}: ${message}` });
         done();
+    });
+    socket.on("nickname", (payload, done) => {
+        const { nickname } = payload;
+        socket["nickname"] = nickname;
     });
 });
 
