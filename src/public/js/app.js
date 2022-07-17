@@ -6,10 +6,6 @@ let room_name = "";
 
 $room.hidden = true;
 
-socket.on("room", (msg) => {
-    console.log(msg);
-});
-
 function handleMessageSubmit(event) {
     //채팅방에 입장하여 메세지를 입력했을 때, 메세지를 보내는 역할.
     event.preventDefault();
@@ -17,7 +13,7 @@ function handleMessageSubmit(event) {
 
     //소켓에게 이벤트를 보낼 때, 마지막 인자에 함수를 보내면 서버에서 이벤트를 모두 처리하고 난 후, 함수가 실행된다.
     socket.emit("new_message", { message: $input.value, room_name }, () => {
-        addMessage(`You : ${$input.value}`);
+        addMessage("나", $input.value);
         $input.value = "";
     });
 }
@@ -44,10 +40,17 @@ function showRoom() {
     $nickname_form.addEventListener("submit", handleNicknameSubmit);
 }
 
-function addMessage(message) {
+function addNotice(message) {
     const $ul = $room.querySelector("ul");
     const $li = document.createElement("li");
     $li.textContent = message;
+    $ul.appendChild($li);
+}
+
+function addMessage(nickname, message) {
+    const $ul = $room.querySelector("ul");
+    const $li = document.createElement("li");
+    $li.textContent = `${nickname} : ${message}`;
     $ul.appendChild($li);
 }
 
@@ -61,15 +64,15 @@ $welcome_form.addEventListener("submit", (event) => {
 
 socket.on("welcome", ({ nickname }) => {
     //socket으로부터 "welcome"이라는 이벤트가 일어나면, addMessage 함수를 이용하여 같은 방에 있는 사람들에게 메세지를 보내게 된다. (공지의 역할)
-    addMessage(`${nickname}(이)가 입장했습니다!`);
+    addNotice(`${nickname}(이)가 입장했습니다!`);
 });
 
 socket.on("bye", ({ nickname }) => {
-    addMessage(`${nickname}(이)가 퇴장했습니다!`);
+    addNotice(`${nickname}(이)가 퇴장했습니다!`);
 });
 
-socket.on("new_message", ({ message }) => {
-    addMessage(message);
+socket.on("new_message", ({ nickname, message }) => {
+    addMessage(nickname, message);
 });
 
 socket.on("disconnect", () => console.log("disconnect to server"));

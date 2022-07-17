@@ -26,6 +26,7 @@ io.on("connection", (socket) => {
     socket["nickname"] = "익명"; //소켓 "nickname" key에 default setting
     socket.onAny((event) => {
         //socket의 모든 이벤트에 접근
+        console.log(io.sockets.adapter);
         console.log(`Socket Event : ${event}`);
     });
     socket.on("enter_room", (payload, done) => {
@@ -47,7 +48,7 @@ io.on("connection", (socket) => {
         const { message, room_name } = payload;
         socket
             .to(room_name)
-            .emit("new_message", { message: `${socket.nickname}: ${message}` });
+            .emit("new_message", { nickname: socket.nickname, message });
         done();
     });
     socket.on("nickname", (payload, done) => {
