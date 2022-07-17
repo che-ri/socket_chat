@@ -22,11 +22,24 @@ const io = SocketIo(server);
  * 5. 기본적으로 룸의 개념이 있다.
  */
 
+function publicRooms() {
+    const { sids, rooms } = io.sockets.adapter;
+
+    const public_rooms = [];
+    rooms.forEach((_, key) => {
+        if (sids.get(key) === undefined) {
+            public_rooms.push(key);
+        }
+    });
+    return public_rooms;
+}
+
 io.on("connection", (socket) => {
     socket["nickname"] = "익명"; //소켓 "nickname" key에 default setting
     socket.onAny((event) => {
         //socket의 모든 이벤트에 접근
-        console.log(io.sockets.adapter);
+
+        console.log(io.sockets.adapter.rooms, io.sockets.adapter.sids);
         console.log(`Socket Event : ${event}`);
     });
     socket.on("enter_room", (payload, done) => {
@@ -34,6 +47,7 @@ io.on("connection", (socket) => {
         socket.join(room_name);
         done();
         socket.to(room_name).emit("welcome", { nickname: socket.nickname }); //"welcome"이라는 이름의 이벤트를 보낸다.
+        io.sockets.emit("room_change", { public_rooms: publicRooms() });
     });
     socket.on("disconnecting", () => {
         //사용자가 채팅방을 떠나려고 하면 이 이벤트가 실행됨
@@ -42,7 +56,7 @@ io.on("connection", (socket) => {
         );
     });
     socket.on("disconnect", () => {
-        console.log("user disconnected");
+        io.sockets.emit("room_change", { public_rooms: publicRooms() });
     });
     socket.on("new_message", (payload, done) => {
         const { message, room_name } = payload;

@@ -2,6 +2,7 @@ const socket = io(); //socket.io를 설치하면 io()를 사용할 수 있다.
 const $welcome = document.querySelector("#welcome");
 const $welcome_form = $welcome.querySelector("form");
 const $room = document.querySelector("#room");
+const $public_room = document.querySelector("#public_room");
 let room_name = "";
 
 $room.hidden = true;
@@ -73,6 +74,20 @@ socket.on("bye", ({ nickname }) => {
 
 socket.on("new_message", ({ nickname, message }) => {
     addMessage(nickname, message);
+});
+
+socket.on("room_change", ({ public_rooms }) => {
+    //누군가 방을 생성하고, 나갈 때마다 이 이벤트를 받으며, 유저에게 오픈채팅방 목록을 보여주는 역할을 한다.
+
+    const $ul = $public_room.querySelector("ul");
+
+    $ul.innerHTML = "";
+
+    public_rooms.forEach((room_name) => {
+        const $li = document.createElement("li");
+        $li.textContent = room_name;
+        $ul.appendChild($li);
+    });
 });
 
 socket.on("disconnect", () => console.log("disconnect to server"));
