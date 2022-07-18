@@ -57,6 +57,11 @@ function addMessage(nickname, message) {
     $ul.appendChild($li);
 }
 
+function setUserCount(cnt) {
+    const $span = $room.querySelector("#user_count");
+    $span.textContent = `${cnt} 명`;
+}
+
 $welcome_form.addEventListener("submit", (event) => {
     event.preventDefault();
     const $input = $welcome_form.querySelector("input");
@@ -71,14 +76,16 @@ socket.on("connect", () => {
     console.log("connect to server");
 });
 
-socket.on("welcome", ({ nickname, user_count = 1 }) => {
+socket.on("welcome", ({ nickname, user_count }) => {
     //채팅방에 유저 입장시, 같은 방에 있는 사람들에게 공지를 보낸다.
     addNotice(`${nickname}(이)가 입장했습니다!`);
+    setUserCount(user_count);
 });
 
 socket.on("bye", ({ nickname, user_count }) => {
     //채팅방에 유저 퇴장시, 같은 방에 있는 사람들에게 공지를 보낸다.
     addNotice(`${nickname}(이)가 퇴장했습니다!`);
+    setUserCount(user_count);
 });
 
 socket.on("new_message", ({ nickname, message }) => {
