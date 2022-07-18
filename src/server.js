@@ -54,6 +54,7 @@ io.on("connection", (socket) => {
 
     socket.on("enter_room", (payload, done) => {
         const { room_name } = payload;
+
         socket.join(room_name);
         io.to(room_name).emit("welcome", {
             nickname: socket.nickname,

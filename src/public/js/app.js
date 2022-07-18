@@ -108,6 +108,17 @@ socket.on("current_rooms", ({ public_rooms }) => {
         $li.appendChild($room_name);
         $li.appendChild($user_count);
         $ul.appendChild($li);
+        $li.classList.add("chat-room");
+        $li.room_name = room_name;
+    });
+
+    //채팅방
+    const $chat_room = $public_room.querySelectorAll(".chat-room");
+    $chat_room.forEach(($room) => {
+        const room_name = $room.room_name;
+        $room.addEventListener("click", () => {
+            socket.emit("enter_room", { room_name }, showRoom);
+        });
     });
 });
 
