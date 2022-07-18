@@ -7,7 +7,7 @@ let room_name = "";
 
 $room.hidden = true;
 
-function handleMessageSubmit(event) {
+function handleMessageSubmit(event, room_name) {
     //채팅방에 입장하여 메세지를 입력했을 때, 메세지를 보내는 역할.
     event.preventDefault();
     const $input = $room.querySelector("#message input");
@@ -27,7 +27,7 @@ function handleNicknameSubmit(event) {
     });
 }
 
-function showRoom() {
+function showRoom(room_name) {
     //현재 채팅방과, 채팅방의 정보를 보여주고, 안의 기능들을 실행시키는 함수.
     $welcome.hidden = true;
     $room.hidden = false;
@@ -35,7 +35,9 @@ function showRoom() {
     $h3.textContent = `Room ${room_name}`;
 
     const $message_form = $room.querySelector("#message");
-    $message_form.addEventListener("submit", handleMessageSubmit);
+    $message_form.addEventListener("submit", (e) =>
+        handleMessageSubmit(e, room_name)
+    );
 
     const $nickname_form = $room.querySelector("#nickname");
     $nickname_form.addEventListener("submit", handleNicknameSubmit);
@@ -58,34 +60,46 @@ function addMessage(nickname, message) {
 $welcome_form.addEventListener("submit", (event) => {
     event.preventDefault();
     const $input = $welcome_form.querySelector("input");
-    socket.emit("enter_room", { room_name: $input.value }, showRoom);
+    socket.emit("enter_room", { room_name: $input.value }, () =>
+        showRoom($input.value)
+    );
     room_name = $input.value;
     $input.value = "";
 });
 
-socket.on("welcome", ({ nickname }) => {
-    //socket으로부터 "welcome"이라는 이벤트가 일어나면, addMessage 함수를 이용하여 같은 방에 있는 사람들에게 메세지를 보내게 된다. (공지의 역할)
+socket.on("connect", () => {
+    console.log("connect to server");
+});
+
+socket.on("welcome", ({ nickname, user_count = 1 }) => {
+    //채팅방에 유저 입장시, 같은 방에 있는 사람들에게 공지를 보낸다.
     addNotice(`${nickname}(이)가 입장했습니다!`);
 });
 
-socket.on("bye", ({ nickname }) => {
+socket.on("bye", ({ nickname, user_count }) => {
+    //채팅방에 유저 퇴장시, 같은 방에 있는 사람들에게 공지를 보낸다.
     addNotice(`${nickname}(이)가 퇴장했습니다!`);
 });
 
 socket.on("new_message", ({ nickname, message }) => {
+    //채팅방에 메세지를 보낸다.
     addMessage(nickname, message);
 });
 
-socket.on("room_change", ({ public_rooms }) => {
-    //누군가 방을 생성하고, 나갈 때마다 이 이벤트를 받으며, 유저에게 오픈채팅방 목록을 보여주는 역할을 한다.
+socket.on("current_rooms", ({ public_rooms }) => {
+    //누군가 socket에 연결하거나, 방을 생성하고, 나갈 때마다 이 이벤트를 받는다.
 
+    //유저에게 오픈채팅방 목록들을 보여주는 역할을 한다.
     const $ul = $public_room.querySelector("ul");
-
     $ul.innerHTML = "";
-
-    public_rooms.forEach((room_name) => {
+    public_rooms.forEach(({ room_name, user_count }) => {
         const $li = document.createElement("li");
-        $li.textContent = room_name;
+        const $room_name = document.createElement("p");
+        $room_name.textContent = `채팅방명 : ${room_name}`;
+        const $user_count = document.createElement("p");
+        $user_count.textContent = `유저 수 : ${user_count} 명`;
+        $li.appendChild($room_name);
+        $li.appendChild($user_count);
         $ul.appendChild($li);
     });
 });
