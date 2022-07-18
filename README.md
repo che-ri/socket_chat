@@ -1,3 +1,3 @@
-# Zoom Clone
+# Socket Chat
 
-using NodeJS, WebRTC and Websockets
+using NodeJS, and Socket.IO
