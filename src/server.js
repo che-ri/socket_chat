@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
         });
         io.sockets.emit("current_rooms", { public_rooms: publicRooms() });
 
-        done();
+        done(room_name);
     });
     socket.on("disconnecting", () => {
         socket.rooms.forEach((room_name) =>

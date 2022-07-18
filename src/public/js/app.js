@@ -31,6 +31,7 @@ function showRoom(room_name) {
     //현재 채팅방과, 채팅방의 정보를 보여주고, 안의 기능들을 실행시키는 함수.
     $welcome.hidden = true;
     $room.hidden = false;
+
     const $h3 = $room.querySelector("h3");
     $h3.textContent = `Room ${room_name}`;
 
@@ -65,9 +66,8 @@ function setUserCount(cnt) {
 $welcome_form.addEventListener("submit", (event) => {
     event.preventDefault();
     const $input = $welcome_form.querySelector("input");
-    socket.emit("enter_room", { room_name: $input.value }, () =>
-        showRoom($input.value)
-    );
+
+    socket.emit("enter_room", { room_name: $input.value }, showRoom);
     room_name = $input.value;
     $input.value = "";
 });
