@@ -53,16 +53,25 @@ io.on("connection", (socket) => {
     });
 
     socket.on("enter_room", (payload, done) => {
-        const { room_name } = payload;
+        const { room_name, leaving_room_name } = payload;
+
+        if (leaving_room_name) {
+            socket.to(leaving_room_name).emit("bye", {
+                nickname: socket.nickname,
+                user_count: countRoomUsers(room_name) - 1, //유저가 아직 떠나지 않은 상태이므로, 현재 유저수에서 -1 해준다.
+            });
+            socket.leave(leaving_room_name);
+        }
 
         socket.join(room_name);
         io.to(room_name).emit("welcome", {
             nickname: socket.nickname,
             user_count: countRoomUsers(room_name),
         });
-        io.sockets.emit("current_rooms", { public_rooms: publicRooms() });
 
-        done(room_name);
+        done(room_name); //채팅방 입장
+
+        io.sockets.emit("current_rooms", { public_rooms: publicRooms() }); //채팅방 갱신
     });
     socket.on("disconnecting", () => {
         socket.rooms.forEach((room_name) =>

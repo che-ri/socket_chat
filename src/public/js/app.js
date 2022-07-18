@@ -2,6 +2,7 @@ const socket = io(); //socket.io를 설치하면 io()를 사용할 수 있다.
 const $welcome = document.querySelector("#welcome");
 const $welcome_form = $welcome.querySelector("form");
 const $room = document.querySelector("#room");
+const $room_name = $room.querySelector("#room_name");
 const $public_room = document.querySelector("#public_room");
 let room_name = "";
 
@@ -12,7 +13,7 @@ function handleMessageSubmit(event, room_name) {
     event.preventDefault();
     const $input = $room.querySelector("#message input");
 
-    //소켓에게 이벤트를 보낼 때, 마지막 인자에 함수를 보내면 서버에서 이벤트를 모두 처리하고 난 후, 함수가 실행된다.
+    //emit 마지막 인자로 함수를 보내줄 수 있다.
     socket.emit("new_message", { message: $input.value, room_name }, () => {
         addMessage("나", $input.value);
         $input.value = "";
@@ -20,6 +21,7 @@ function handleMessageSubmit(event, room_name) {
 }
 
 function handleNicknameSubmit(event) {
+    //닉네임을 저장하는 역할
     event.preventDefault();
     const $input = $room.querySelector("#nickname input");
     socket.emit("nickname", { nickname: $input.value }, () => {
@@ -32,8 +34,12 @@ function showRoom(room_name) {
     $welcome.hidden = true;
     $room.hidden = false;
 
-    const $h3 = $room.querySelector("h3");
-    $h3.textContent = `Room ${room_name}`;
+    //채팅방 이름 갱신
+    $room_name.textContent = `Room ${room_name}`;
+
+    //채팅기록 삭제
+    const $ul = $room.querySelector("ul");
+    $ul.innerHTML = "";
 
     const $message_form = $room.querySelector("#message");
     $message_form.addEventListener("submit", (e) =>
@@ -45,6 +51,7 @@ function showRoom(room_name) {
 }
 
 function addNotice(message) {
+    //공지
     const $ul = $room.querySelector("ul");
     const $li = document.createElement("li");
     $li.textContent = message;
@@ -52,6 +59,7 @@ function addNotice(message) {
 }
 
 function addMessage(nickname, message) {
+    //메세지
     const $ul = $room.querySelector("ul");
     const $li = document.createElement("li");
     $li.textContent = `${nickname} : ${message}`;
@@ -59,11 +67,13 @@ function addMessage(nickname, message) {
 }
 
 function setUserCount(cnt) {
+    //채팅방 내 유저수
     const $span = $room.querySelector("#user_count");
     $span.textContent = `${cnt} 명`;
 }
 
 $welcome_form.addEventListener("submit", (event) => {
+    //채팅방 입장
     event.preventDefault();
     const $input = $welcome_form.querySelector("input");
 
@@ -96,7 +106,7 @@ socket.on("new_message", ({ nickname, message }) => {
 socket.on("current_rooms", ({ public_rooms }) => {
     //누군가 socket에 연결하거나, 방을 생성하고, 나갈 때마다 이 이벤트를 받는다.
 
-    //유저에게 오픈채팅방 목록들을 보여주는 역할을 한다.
+    //유저에게 오픈채팅방 목록들을 보여주는 역할
     const $ul = $public_room.querySelector("ul");
     $ul.innerHTML = "";
     public_rooms.forEach(({ room_name, user_count }) => {
@@ -112,12 +122,20 @@ socket.on("current_rooms", ({ public_rooms }) => {
         $li.room_name = room_name;
     });
 
-    //채팅방
+    //채팅방 목록을 통한 채팅방 입장
     const $chat_room = $public_room.querySelectorAll(".chat-room");
     $chat_room.forEach(($room) => {
-        const room_name = $room.room_name;
+        const cur_click_room_name = $room.room_name;
+        const leaving_room_name = $room_name.textContent.replace("Room ", "");
         $room.addEventListener("click", () => {
-            socket.emit("enter_room", { room_name }, showRoom);
+            socket.emit(
+                "enter_room",
+                {
+                    room_name: cur_click_room_name,
+                    leaving_room_name,
+                },
+                showRoom
+            );
         });
     });
 });
